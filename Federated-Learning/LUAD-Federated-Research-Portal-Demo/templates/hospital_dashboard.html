@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ hospital_name }} | LUAD Federated Research</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/branding.css') }}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      {% include "_sidebar_branding.html" %}
+      <div class="role-chip"><i class="bi bi-building"></i> {{ role_label }}</div>
+      <nav aria-label="Research lab navigation">
+        <a class="nav-link active" href="{{ url_for('hospital_dashboard', hospital_id=hospital_id) }}" aria-current="page"><i class="bi bi-grid-1x2-fill"></i> Overview</a>
+        <a class="nav-link" href="{{ url_for('local_prediction', hospital_id=hospital_id) }}"><i class="bi bi-activity"></i> Local Genomic Analysis</a>
+        <a class="nav-link" href="{{ url_for('report_archive', hospital_id=hospital_id) }}"><i class="bi bi-archive"></i> Report Archive</a>
+      </nav>
+      {% include "_sidebar_affiliation.html" %}
+      <div class="sidebar-footer"><a class="button outline" href="{{ url_for('logout') }}"><i class="bi bi-box-arrow-right"></i> Logout</a></div>
+    </aside>
+
+    <main class="content client-overview">
+      {% set early_share = ((summary.early_count / summary.patient_count) * 100)|round(1) if summary.patient_count else 0 %}
+      {% set advanced_share = ((summary.advanced_count / summary.patient_count) * 100)|round(1) if summary.patient_count else 0 %}
+      <header class="page-header">
+        <div>
+          <p class="eyebrow">CHI LAB &middot; FEDERATED GENOMIC AI RESEARCH</p>
+          <h1>Research Client Dashboard</h1>
+          <p class="muted">{{ hospital_name }} &middot; Private simulated research environment</p>
+          <div class="client-context" aria-label="Research client context">
+            <span class="client-context-item"><i class="bi bi-hash" aria-hidden="true"></i> Client {{ hospital_id }} of 3</span>
+            <span class="client-context-item"><i class="bi bi-building" aria-hidden="true"></i> Simulated Research Hospital / Lab</span>
+            <span class="client-context-item"><i class="bi bi-diagram-3" aria-hidden="true"></i> Federated participant</span>
+          </div>
+        </div>
+        <span class="status-pill" aria-label="Federated connection status: connected"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Connected</span>
+      </header>
+
+      <section class="notice">
+        <i class="bi bi-shield-lock-fill" aria-hidden="true"></i>
+        <div><strong>Privacy boundary</strong><span>Only this research lab's local summary is shown. Raw patient training records remain within this simulated client environment.</span></div>
+      </section>
+
+      <section class="federation-strip" aria-label="Federated context">
+        <div class="federation-strip-heading">
+          <div><p class="eyebrow">FEDERATED CONTEXT</p><h2>Client participation summary</h2></div>
+          <span class="strip-note">Research prototype metadata</span>
+        </div>
+        <div class="federation-strip-grid">
+          <div class="federation-item"><span>Client</span><strong>{{ hospital_id }} of 3</strong></div>
+          <div class="federation-item"><span>Federation status</span><strong><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Connected</strong></div>
+          <div class="federation-item"><span>Aggregation</span><strong>FedAvg</strong></div>
+          <div class="federation-item"><span>Data mode</span><strong>Local records retained</strong></div>
+        </div>
+      </section>
+
+      <section class="metric-grid client-metrics" aria-label="Local research summary">
+        <article class="metric-card accent-blue">
+          <div class="metric-card-top"><span class="metric-label">Local research records</span><i class="metric-icon bi bi-database" aria-hidden="true"></i></div>
+          <strong>{{ summary.patient_count }}</strong>
+          <span class="metric-caption">Private to this client</span>
+        </article>
+        <article class="metric-card accent-teal">
+          <div class="metric-card-top"><span class="metric-label">Early group</span><i class="metric-icon bi bi-bar-chart-line" aria-hidden="true"></i></div>
+          <strong>{{ summary.early_count }}</strong>
+          <span class="metric-caption metric-secondary">Stage I&ndash;II &middot; {{ early_share }}% of local records</span>
+        </article>
+        <article class="metric-card accent-purple">
+          <div class="metric-card-top"><span class="metric-label">Advanced group</span><i class="metric-icon bi bi-graph-up" aria-hidden="true"></i></div>
+          <strong>{{ summary.advanced_count }}</strong>
+          <span class="metric-caption metric-secondary">Stage III&ndash;IV &middot; {{ advanced_share }}% of local records</span>
+        </article>
+        <article class="metric-card accent-gold">
+          <div class="metric-card-top"><span class="metric-label">Valid 301-bp mutation windows</span><i class="metric-icon bi bi-dna" aria-hidden="true"></i></div>
+          <strong>{{ summary.total_mutations if summary.total_mutations is not none else 'N/A' }}</strong>
+          <span class="metric-caption">Aggregated local source summary</span>
+        </article>
+      </section>
+
+      <section class="dashboard-grid overview-panels">
+        <article class="panel status-panel">
+          <div class="panel-heading"><div><p class="eyebrow">LOCAL DATA BOUNDARY</p><h2>Research lab status</h2></div><span class="status-pill teal"><i class="bi bi-check-circle" aria-hidden="true"></i> Connected</span></div>
+          <dl class="detail-list">
+            <div class="detail-row"><dt>Local database</dt><dd><code>{{ summary.database_name }}</code></dd></div>
+            <div class="detail-row"><dt>Local data boundary</dt><dd>Local only</dd></div>
+            <div class="detail-row"><dt>Federated connection</dt><dd><span class="inline-status"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Connected</span></dd></div>
+          </dl>
+          <p class="panel-copy">This dashboard queries only the local research database. Raw genomic sequences and mutation-level records are not displayed.</p>
+        </article>
+
+        <article class="panel model-status-panel">
+          <div class="panel-heading"><div><p class="eyebrow">EXPERIMENT CONFIGURATION</p><h2>Federated model status</h2></div><span class="status-pill teal"><i class="bi bi-info-circle" aria-hidden="true"></i> Configuration</span></div>
+          <dl class="detail-list model-detail-list">
+            <div class="detail-row"><dt>Global model status</dt><dd>Experiment configuration</dd></div>
+            <div class="detail-row"><dt>Final communication round</dt><dd>3</dd></div>
+            <div class="detail-row"><dt>Total communication rounds</dt><dd>3</dd></div>
+            <div class="detail-row"><dt>FedAvg status</dt><dd>Weighted FedAvg</dd></div>
+            <div class="detail-row"><dt>Raw records shared</dt><dd>No</dd></div>
+          </dl>
+        </article>
+      </section>
+
+      <section class="panel quick-action">
+        <i class="bi bi-activity" aria-hidden="true"></i>
+        <div class="quick-action-content">
+          <p class="eyebrow">NEXT STEP</p>
+          <h2>Run Local Genomic Analysis</h2>
+          <p class="muted">Analyze an existing local research record or enter a request-only sample within this simulated research environment. Raw local records are not pooled centrally.</p>
+          <div class="quick-action-actions">
+            <a class="button primary" href="{{ url_for('local_prediction', hospital_id=hospital_id) }}"><i class="bi bi-arrow-up-right-circle" aria-hidden="true"></i> Open local analysis</a>
+            <div class="quick-links" aria-label="Additional research links">
+              <a class="quick-link" href="{{ url_for('report_archive', hospital_id=hospital_id) }}">View Report Archive <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+              <a class="quick-link" href="{{ url_for('local_prediction', hospital_id=hospital_id) }}">Local Genomic Analysis <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
